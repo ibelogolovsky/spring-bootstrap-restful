@@ -27,8 +27,15 @@ public class ApiController {
         this.roleService = roleService;
     }
 
+    private Set<Role> convertNumbersToRoles(Set<Role> roles) {
+        return roles.stream()
+                .map(x -> roleService.get(Long.parseLong(x.getName())))
+                .collect(Collectors.toSet());
+    }
+
     @PostMapping("/users")
     public ResponseEntity<?> create(@RequestBody User user) {
+        user.setRoles(convertNumbersToRoles(user.getRoles()));
         userService.save(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -52,9 +59,7 @@ public class ApiController {
     @PatchMapping(value = "/users/{id}", consumes = "application/json")
     public ResponseEntity<?> update(@PathVariable(name = "id") long id,
                                     @RequestBody User user) {
-        Set<Role> roles =  user.getRoles().stream()
-                .map(x -> roleService.get(Long.parseLong(x.getName())))
-                .collect(Collectors.toSet());
+        Set<Role> roles = convertNumbersToRoles(user.getRoles());
         if (userService.get(id) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         } else {

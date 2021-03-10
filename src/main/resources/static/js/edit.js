@@ -136,19 +136,12 @@ $(function () {
 })
 
 $(function () {
-    $('#edit-form').on("submit", async function (e) {
+    $('#edit-form').on("submit", function (e) {
         e.preventDefault();
-        console.log("Edit form submitted")
         const data = new FormData(document.getElementById('edit-form'));
         const user = Object.fromEntries(data.entries());
         user.roles = data.getAll("roles");
-        // var data = getFormData($('#edit-form'));
         const id = document.getElementById('edit-form').getAttribute('data-bs-edituserid');
-
-        console.log(user);
-        console.log(JSON.stringify(user));
-        console.log(id);
-
         $.ajax({
             type: "PATCH",
             url: "api/users/" + id,
@@ -156,13 +149,32 @@ $(function () {
             contentType: "application/json;charset=utf-8",
             dataType: "json",
             complete: function () {
-                console.log("Edit success");
                 fillUsersTable();
                 $('#editModal').modal('hide');
             }
         })
     })
 });
+
+$(function () {
+    $('#newuser-form').on("submit", function (e) {
+        e.preventDefault();
+        const data = new FormData(document.getElementById('newuser-form'));
+        const user = Object.fromEntries(data.entries());
+        user.roles = data.getAll("roles");
+        $.ajax({
+            type: "POST",
+            url: "api/users",
+            data: JSON.stringify(user),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            complete: function () {
+                fillUsersTable();
+                $('#nav-tab li:first-child a').tab('show');
+            }
+        })
+    })
+})
 
 function getFormData($form) {
     var unindexed_array = $form.serializeArray();
