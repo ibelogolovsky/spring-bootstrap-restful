@@ -2,14 +2,17 @@ package net.belogolovsky.boot.crud.controller;
 
 import net.belogolovsky.boot.crud.model.Role;
 import net.belogolovsky.boot.crud.model.User;
+import net.belogolovsky.boot.crud.service.RoleService;
 import net.belogolovsky.boot.crud.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -17,8 +20,11 @@ public class ApiController {
 
     private final UserService userService;
 
-    public ApiController(UserService userService) {
+    private final RoleService roleService;
+
+    public ApiController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @PostMapping("/users")
@@ -35,7 +41,7 @@ public class ApiController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping(value = "/users/{id}", produces = "application/json")
     public ResponseEntity<?> read(@PathVariable(name = "id") long id) {
         final User user = userService.get(id);
         return user != null
@@ -43,10 +49,12 @@ public class ApiController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PatchMapping("/users/{id}")
+    @PatchMapping(value = "/users/{id}", consumes = "application/json")
     public ResponseEntity<?> update(@PathVariable(name = "id") long id,
-                                    @RequestBody User user,
-                                    @RequestBody(required = false) Role[] rolesArray) {
+                                    @RequestBody User user) {
+        Set<Role> roles =  user.getRoles().stream()
+                .map(x -> roleService.get(Long.parseLong(x.getName())))
+                .collect(Collectors.toSet());
         if (userService.get(id) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         } else {
@@ -57,13 +65,13 @@ public class ApiController {
                 user.setPassword(dbUser.getPassword());
                 passwordUpdated = false;
             }
-            user.setRoles(new HashSet<>());
+            user.setRoles(roles);
             userService.save(user, passwordUpdated);
-            if (rolesArray != null) {
-                for (Role role : rolesArray) {
-                    userService.addRole(user, role.getName());
-                }
-            }
+//            if (rolesArray != null) {
+//                for (Role role : rolesArray) {
+//                    userService.addRole(user, role.getName());
+//                }
+//            }
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
