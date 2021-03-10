@@ -73,10 +73,8 @@ function fillUsersTable() {
         url: "/api/users",
         method: "GET",
         success: function (data) {
-            console.log(data)
             $(function () {
                 $.each(data, function (i, item) {
-                    // console.log(item)
                     $('<tr>').append(
                         $('<td>').text(item.id),
                         $('<td>').text(item.firstName),
@@ -122,7 +120,6 @@ function fillUsersTable() {
 $(function () {
     $('#delete-form').on("submit", function (e) {
         e.preventDefault();
-        console.log("Delete form submitted");
         const id = document.getElementById("delete-form").getAttribute("data-userid");
         $.ajax({
             type: "DELETE",

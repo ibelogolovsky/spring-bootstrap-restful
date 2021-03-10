@@ -72,11 +72,6 @@ public class ApiController {
             }
             user.setRoles(roles);
             userService.save(user, passwordUpdated);
-//            if (rolesArray != null) {
-//                for (Role role : rolesArray) {
-//                    userService.addRole(user, role.getName());
-//                }
-//            }
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
